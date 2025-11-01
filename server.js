@@ -5,7 +5,17 @@ import dotenv from "dotenv";
 dotenv.config();
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://siriwimom.github.io"
+    ],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization", "x-user-id"],
+  })
+);
+
 app.use(express.json());
 
 app.get("/", (req, res) => {
