@@ -1,25 +1,22 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-
+import mongoose from "mongoose";
 dotenv.config();
 const app = express();
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "https://siriwimom.github.io"
-    ],
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization", "x-user-id"],
-  })
-);
+app.use(cors({
+  origin: "https://siriwimom.github.io/Holiday_Pastry",
+  credentials: true
+}));
 
 app.use(express.json());
 
 app.get("/", (req, res) => {
   res.send("Holiday Pastry API is running 🍰");
+});
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
 // ตัวอย่างเชื่อม MongoDB
