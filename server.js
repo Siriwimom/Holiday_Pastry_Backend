@@ -4,13 +4,16 @@ import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 
+// ✅ import route ต่าง ๆ
+import authRoutes from "./routes/auth.js";  // <-- ต้องเพิ่มบรรทัดนี้
+
 dotenv.config();
 const app = express();
 
 const allowedOrigins = [
   "https://siriwimom.github.io",
   "https://siriwimom.github.io/Holiday_Pastry",
-  "http://localhost:5173"
+  "http://localhost:5173",
 ];
 
 app.use(
@@ -28,11 +31,14 @@ app.use(
 
 app.use(express.json());
 
+// ✅ mount route /api/auth
+app.use("/api/auth", authRoutes); // <-- บรรทัดสำคัญสุด
+
 app.get("/", (req, res) => {
   res.send("Holiday Pastry API is running 🍰");
 });
 
-// ✅ เชื่อม MongoDB และเริ่ม server
+// ✅ เชื่อม MongoDB และ start server
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 
