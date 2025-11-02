@@ -1,14 +1,16 @@
+// server.js
 import cors from "cors";
 import express from "express";
 import dotenv from "dotenv";
-dotenv.config();
+import mongoose from "mongoose";
 
+dotenv.config();
 const app = express();
 
 const allowedOrigins = [
   "https://siriwimom.github.io",
   "https://siriwimom.github.io/Holiday_Pastry",
-  "http://localhost:5173" // เผื่อเทสในเครื่อง
+  "http://localhost:5173"
 ];
 
 app.use(
@@ -29,3 +31,19 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("Holiday Pastry API is running 🍰");
 });
+
+// ✅ เชื่อม MongoDB และเริ่ม server
+const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI;
+
+mongoose
+  .connect(MONGO_URI)
+  .then(() => {
+    console.log("✅ MongoDB connected");
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err);
+  });
