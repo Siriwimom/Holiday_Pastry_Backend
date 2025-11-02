@@ -18,9 +18,6 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
-// ตัวอย่างเชื่อม MongoDB
-import mongoose from "mongoose";
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch(err => console.error("❌ DB connection error:", err));
