@@ -38,6 +38,11 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ✅ Routes
 app.use("/api/auth", authRoutes);
+app.use((req, res, next) => {
+  console.log("📩 Incoming:", req.method, req.path);
+  next();
+});
+
 app.use("/api/user", userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
