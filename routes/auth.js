@@ -129,33 +129,31 @@ router.post("/reset-password-direct", async (req, res) => {
 router.post("/register", async (req, res) => {
   try {
     const { username, email, password } = req.body;
+    if (!username || !email || !password)
+      return res.status(400).json({ message: "Missing required fields" });
 
     const existing = await User.findOne({ email });
     if (existing)
       return res.status(400).json({ message: "Email already registered" });
 
     const hash = await bcrypt.hash(password, 10);
-    const user = await User.create({
-      username,
-      email,
-      passwordHash: hash,
-      role: "user",
-    });
+    const user = await User.create({ username, email, passwordHash: hash });
 
     const token = jwt.sign(
-      { sub: user._id, role: user.role },
+      { sub: user._id, role: user.role || "user" },
       process.env.JWT_SECRET || "devsecret",
       { expiresIn: "7d" }
     );
 
-    res.json({
+    res.status(200).json({
       user: { _id: user._id, username: user.username, email: user.email },
       token,
     });
   } catch (err) {
     console.error("POST /register error:", err);
-    res.status(500).json({ message: "Register failed" });
+    res.status(500).json({ message: "Register failed", error: err.message });
   }
 });
+
 
 export default router;
