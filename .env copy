@@ -1,4 +1,5 @@
-
 MONGO_URI=mongodb+srv://Holiday_pastry:1234@cluster0.5bak4gq.mongodb.net/holiday_pastry?retryWrites=true&w=majority
-JWT_SECRET=your_jwt_secret
-CLIENT_URL=https://siriwimom.github.io/Holiday_Pastry
+PORT=5000
+JWT_SECRET=devsecret
+PUBLIC_BASE_URL=http://localhost:5000
+
