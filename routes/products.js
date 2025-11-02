@@ -7,11 +7,11 @@ import Product from "../models/Product.js";
 
 const router = express.Router();
 
-/* ---------- upload dir ---------- */
+/* ---------- Upload Directory ---------- */
 const uploadDir = path.join(process.cwd(), "uploads");
 fs.mkdirSync(uploadDir, { recursive: true });
 
-/* ---------- Multer ---------- */
+/* ---------- Multer Configuration ---------- */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadDir),
   filename: (req, file, cb) => {
@@ -19,6 +19,7 @@ const storage = multer.diskStorage({
     cb(null, `${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`);
   },
 });
+
 const upload = multer({ storage });
 
 // รองรับทั้งรูปหลักและรูปด้านข้างหลายไฟล์
@@ -27,8 +28,10 @@ const uploadFields = upload.fields([
   { name: "imageSide", maxCount: 20 },
 ]);
 
-// base URL ที่ใช้ประกอบลิงก์รูป
-const BASE = process.env.PUBLIC_BASE_URL || "http://localhost:5000";
+/* ---------- Base URL สำหรับ Render ---------- */
+const BASE =
+  process.env.PUBLIC_BASE_URL ||
+  "https://holiday-pastry-backend.onrender.com";
 
 /* ---------- CREATE ---------- */
 router.post("/", uploadFields, async (req, res) => {
@@ -40,9 +43,11 @@ router.post("/", uploadFields, async (req, res) => {
 
     const imageMainUrl = mainFile
       ? `${BASE}/uploads/${mainFile.filename}`
-      : (sideFiles[0] ? `${BASE}/uploads/${sideFiles[0].filename}` : "");
+      : sideFiles[0]
+      ? `${BASE}/uploads/${sideFiles[0].filename}`
+      : "";
 
-    const imageSideUrls = sideFiles.map(f => `${BASE}/uploads/${f.filename}`);
+    const imageSideUrls = sideFiles.map((f) => `${BASE}/uploads/${f.filename}`);
 
     const doc = await Product.create({
       name,
@@ -50,16 +55,15 @@ router.post("/", uploadFields, async (req, res) => {
       category,
       description,
       imageMainUrl,
-      imageSideUrls
+      imageSideUrls,
     });
 
     res.json(doc);
   } catch (e) {
-    console.error("create product error:", e);
+    console.error("❌ create product error:", e);
     res.status(500).json({ message: "Create failed" });
   }
 });
-
 
 /* ---------- UPDATE ---------- */
 router.put("/:id", uploadFields, async (req, res) => {
@@ -81,39 +85,55 @@ router.put("/:id", uploadFields, async (req, res) => {
       p.imageMainUrl = `${BASE}/uploads/${mainFile.filename}`;
     }
     if (sideFiles.length) {
-      p.imageSideUrls.push(...sideFiles.map(f => `${BASE}/uploads/${f.filename}`));
+      p.imageSideUrls.push(...sideFiles.map((f) => `${BASE}/uploads/${f.filename}`));
     }
 
-    // กันเคสเก่า ๆ ที่ยังไม่มี main
-    if (!p.imageMainUrl) {
-      if (p.imageSideUrls?.length) p.imageMainUrl = p.imageSideUrls[0];
+    // กันเคสเก่าที่ยังไม่มี main
+    if (!p.imageMainUrl && p.imageSideUrls?.length) {
+      p.imageMainUrl = p.imageSideUrls[0];
     }
 
     await p.save();
     res.json(p);
   } catch (e) {
-    console.error("update product error:", e);
+    console.error("❌ update product error:", e);
     res.status(500).json({ message: "Update failed" });
   }
 });
 
 /* ---------- READ ---------- */
 router.get("/", async (req, res) => {
-  const list = await Product.find().sort({ createdAt: -1 });
-  res.json(list);
+  try {
+    const list = await Product.find().sort({ createdAt: -1 });
+    res.json(list);
+  } catch (e) {
+    res.status(500).json({ message: "Fetch failed" });
+  }
 });
 
 router.get("/:id", async (req, res) => {
-  const p = await Product.findById(req.params.id);
-  if (!p) return res.status(404).json({ message: "Not found" });
-  res.json(p);
+  try {
+    const p = await Product.findById(req.params.id);
+    if (!p) return res.status(404).json({ message: "Not found" });
+    res.json(p);
+  } catch (e) {
+    res.status(500).json({ message: "Fetch single failed" });
+  }
 });
 
 /* ---------- DELETE ---------- */
 router.delete("/:id", async (req, res) => {
-  const p = await Product.findByIdAndDelete(req.params.id);
-  if (!p) return res.status(404).json({ message: "Not found" });
-  res.json({ ok: true, deletedId: req.params.id });
+  try {
+    const p = await Product.findByIdAndDelete(req.params.id);
+    if (!p) return res.status(404).json({ message: "Not found" });
+    res.json({ ok: true, deletedId: req.params.id });
+  } catch (e) {
+    res.status(500).json({ message: "Delete failed" });
+  }
 });
+
+/* ---------- Static Serve for Uploads ---------- */
+// Render จะส่งไฟล์รูปในโฟลเดอร์ uploads ได้ผ่าน URL
+router.use("/uploads", express.static(uploadDir));
 
 export default router;
