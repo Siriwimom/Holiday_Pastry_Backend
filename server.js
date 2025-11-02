@@ -2,33 +2,38 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+import authRoutes from "./routes/auth.js"; // ✅ สำคัญ ต้องมี .js ถ้าใช้ ESM
 
 dotenv.config();
 
 const app = express();
-
-// ✅ ประกาศ PORT ก่อนใช้งาน
 const PORT = process.env.PORT || 5000;
 
-// ✅ ตั้งค่า CORS
-app.use(cors({
-  origin: "https://siriwimom.github.io/Holiday_Pastry",
-  credentials: true
-}));
+// ✅ CORS: อนุญาตให้เว็บจาก GitHub Pages เรียก API ได้
+app.use(
+  cors({
+    origin: "https://siriwimom.github.io/Holiday_Pastry",
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 
-// ✅ เชื่อมต่อ MongoDB ก่อนเริ่ม server
-mongoose.connect(process.env.MONGO_URI)
+// ✅ เชื่อมต่อ MongoDB
+mongoose
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
-  .catch(err => console.error("❌ DB connection error:", err));
+  .catch((err) => console.error("❌ DB connection error:", err));
 
-// ✅ Route เริ่มต้น (health check)
+// ✅ ใช้งาน route auth ทั้งหมด
+app.use("/api/auth", authRoutes);
+
+// ✅ health check route
 app.get("/", (req, res) => {
   res.send("Holiday Pastry API is running 🍰");
 });
 
-// ✅ เริ่มต้น server (ฟังก์ชันเดียว)
+// ✅ start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
