@@ -3,6 +3,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+import fs from "fs";
+import path from "path";
 
 // ✅ โหลดไฟล์ .env
 dotenv.config();
@@ -38,6 +40,11 @@ app.use(
 
 // ====== ⚙️ Middleware ======
 app.use(express.json()); // อ่าน JSON body
+
+// ====== 📁 สร้างโฟลเดอร์ uploads และเสิร์ฟไฟล์ static ======
+const uploadDir = path.join(process.cwd(), "uploads");
+fs.mkdirSync(uploadDir, { recursive: true });
+app.use("/uploads", express.static("uploads")); // ✅ ให้เข้าถึงภาพผ่าน URL ได้
 
 // ====== 🌐 Routes ======
 app.get("/", (req, res) => {
